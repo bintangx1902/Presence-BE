@@ -22,3 +22,5 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('api/', include('api.urls', namespace='api')),
 ]
+
+urlpatterns += [path('', include('dashboard.urls'))]
