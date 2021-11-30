@@ -23,6 +23,7 @@ def registering_user(request, link):
             e_form.instance.is_controller = True
             e_form.instance.create_access = True
             e_form.instance.agency = link
+            e_form.save()
 
     context = {
         'form': form,
