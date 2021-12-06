@@ -1,6 +1,10 @@
 from .main import *
 
 
+class UserPresenceLanding(TemplateView):
+    template_name = ''
+
+
 def presence(request, link, pk):
     this_pre = get_object_or_404(QRCodeGenerator, pk=pk)
     this_agency = get_object_or_404(AgencyName, link=link)

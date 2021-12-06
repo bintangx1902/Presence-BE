@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Agency Dashboard</title>
+</head>
+<body>
+<p>
+    total employee : {{ emp }}
+</p>
+<p>
+    {% for qr in QR %}
+    {{ qr }} <br>
+    {% endfor %}
+</p>
+<div>
+    <form action="{% url 'dash:create-qr' agc %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <button class="btn btn-primary">Create Absence QR code</button>
+    </form>
+
+</div>
+<div class="">
+    <h3>Employee : </h3>
+    {% for data in emp_data %}
+    {{ data.user.first_name }} <br>
+    {% endfor %}
+</div>
+</body>
+</html>

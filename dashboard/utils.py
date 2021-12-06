@@ -6,3 +6,10 @@ def generate_agency_code():
     num = '0123456789'
     raw = letter + num
     return ''.join(random.sample(raw, 32))
+
+
+def generate_qr_code():
+    letter = string.ascii_letters
+    num = '0123456789'
+    raw = letter + num
+    return ''.join(random.sample(raw, 24))

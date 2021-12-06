@@ -64,7 +64,7 @@ ACCOUNT_FORMS = {
 }
 
 ACCOUNT_SIGNUP_REDIRECT_URL = '/landed'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/landed'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

@@ -8,23 +8,25 @@ from django.http import HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils.decorators import method_decorator
-from ..utils import generate_agency_code
+from ..utils import *
+from django.utils import timezone
 
 """
 Main part is for unknown user, create invitation, fill form
 """
 
 
-@login_required(login_url='/accounts/login')
 def redirection(request):
-    try:
-        get_user = UserExtended.objects.get(user__id=request.user.id)
-    except UserExtended.DoesNotExist:
-        return redirect('dash:agency')
+    if request.user.is_authenticated:
+        get_user = UserExtended.objects.filter(user=request.user)
+        if not get_user:
+            return HttpResponseRedirect(reverse('dash:landing'))
+        get_user = get_object_or_404(UserExtended, user=request.user)
 
-    if get_user.is_controller:
-        return reverse('agency-dashboard', args=[get_user.agency.link])
-    return reverse('user-dashboard', args=[get_user.agency.link])
+        if get_user.is_controller:
+            return HttpResponseRedirect(reverse('dash:agency-dashboard', args=[get_user.agency.link]))
+        return HttpResponseRedirect(reverse('dash:user-dashboard', args=[get_user.agency.link]))
+    return redirect('dash:landing')
 
 
 """ if user is not recognized or not authenticated """
@@ -44,6 +46,8 @@ def register_by_invitation(request, link):
         messages.warning(request, "Maaf Forms ini sudah tidak menerima respons lagi")
 
     if request.method == 'POST':
+        form = RegisteringUser(request.POST or None, request.FILES or None)
+        e_form = UserExtendedForm(request.POST or None, request.FILES or None)
         email = request.POST.get('email')
         username = request.POST.get('username')
         f_name = request.POST.get('first_name')
@@ -73,46 +77,37 @@ def register_by_invitation(request, link):
     return render(request, 'main/forms.html', context)
 
 
-def manual_registration(request):
-    is_manual = True
-    form = RegisteringUser()
-    e_form = UserExtendedForm()
-
-    if request.method == 'POST':
-        agency_code = request.POST.get('code')
-        password1 = request.POST.get('password1')
-        password2 = request.POST.get('password2')
-        email = request.POST.get('email')
-        f_name = request.POST.get('first_name')
-        l_name = request.POST.get('last_name')
-        username = request.POST.get('username')
-        if password1 == password2:
-            if form.is_valid() and e_form.is_valid():
-                user = User.objects.create_user(username=username, password=password2)
-                user.email = email
-                user.first_name = f_name
-                user.last_name = l_name
-                # user.save()
-                agency = get_object_or_404(AgencyName, code=agency_code)
-                e_form.instance.user = user
-                e_form.instance.agency = agency
-                # e_form.save()
-                # return reverse
-        # messages.warning(request, "Pastikan bahwa password harus sama ! ")
-    context = {
-        'form': form,
-        'e_form': e_form,
-        'is_manual': is_manual
-    }
-    return render(request, 'main/forms.html', context)
-
-
 def account_register(request):
-    is_manual = False
+    code_only = False
     form = RegisteringUser()
     e_form = UserExtendedForm()
+    plus_code = False
+
+    join = request.GET.get('join')
+    if join == 'true':
+        plus_code = True
+
+    if request.user.is_authenticated:
+        code_only = True
+        user = UserExtended.objects.filter(user=request.user)
+        if user:
+            user = get_object_or_404(UserExtended, user=request.user)
+            if request.method == 'POST':
+                code = request.POST.get('code')
+                find_agency = AgencyName.objects.filter(unique_code=code)
+                if find_agency:
+                    find_agency = get_object_or_404(AgencyName, unique_code=code)
+                    if not user.agency == find_agency:
+                        user.agency = find_agency
+                        user.save()
+                        return redirect('/')
+                    messages.info(request, "You've been registered into agency or school!")
+                    return redirect('/landed')
+        return render(request, 'main/forms.html', {'code_only': code_only})
 
     if request.method == 'POST':
+        form = RegisteringUser(request.POST or None, request.FILES or None)
+        e_form = UserExtendedForm(request.POST or None, request.FILES or None)
         agency_code = request.POST.get('code')
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
@@ -126,17 +121,20 @@ def account_register(request):
                 user.email = email
                 user.first_name = f_name
                 user.last_name = l_name
-                # user.save()
-                agency = get_object_or_404(AgencyName, code=agency_code)
-                e_form.instance.user = user
-                e_form.instance.agency = agency
-                # e_form.save()
-                # return reverse
-        # messages.warning(request, "Pastikan bahwa password harus sama ! ")
+                agency = AgencyName.objects.filter(unique_code=agency_code)
+                if agency:
+                    user.save()
+                    agency = get_object_or_404(AgencyName, unique_code=agency_code)
+                    e_form.instance.user = user
+                    e_form.instance.agency = agency
+                    e_form.save()
+                    return redirect('/accounts/login/')
+        messages.warning(request, "Pastikan bahwa password harus sama ! ")
     context = {
         'form': form,
         'e_form': e_form,
-        'is_manual': is_manual
+        'code_only': code_only,
+        'pc': plus_code
     }
     return render(request, 'main/forms.html', context)
 
@@ -145,6 +143,8 @@ class LandingPage(TemplateView):
     template_name = 'main/landing.html'
 
     def dispatch(self, request, *args, **kwargs):
+        # if self.request.user.is_authenticated:
+        #     return HttpResponseRedirect(reverse('dash:main'))
         return super(LandingPage, self).dispatch(request, *args, **kwargs)
 
 
@@ -171,6 +171,3 @@ class CreateAgency(CreateView):
     @method_decorator(login_required(login_url='/accounts/login/'))
     def dispatch(self, request, *args, **kwargs):
         return super(CreateAgency, self).dispatch(request, *args, **kwargs)
-
-
-
