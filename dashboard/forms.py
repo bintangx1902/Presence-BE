@@ -12,7 +12,7 @@ class RegisteringUser(UserCreationForm):
 class AgencyRegistering(forms.ModelForm):
     class Meta:
         model = AgencyName
-        fields = ['name', 'link', 'img', 'desc']
+        fields = ['name', 'img', 'desc']
 
 
 class UserExtendedForm(forms.ModelForm):

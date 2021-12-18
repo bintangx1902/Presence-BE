@@ -18,7 +18,13 @@ class DashboardView(TemplateView):
         context['emp_data'] = all_emp
         return context
 
+    @method_decorator(login_required(login_url="/accounts/login"))
+    @method_decorator(is_controller())
+    def dispatch(self, request, *args, **kwargs):
+        return super(DashboardView, self).dispatch(request, *args, **kwargs)
 
+
+@login_required(login_url='/accounts/login')
 def registering_user(request, link):
     form = RegisteringUser()
     e_form = UserExtendedForm()

@@ -23,9 +23,11 @@ def redirection(request):
             return HttpResponseRedirect(reverse('dash:landing'))
         get_user = get_object_or_404(UserExtended, user=request.user)
 
-        if get_user.is_controller:
+        if get_user.agency:
+            return HttpResponseRedirect(reverse('dash:user-dashboard', args=[get_user.agency.link]))
+        elif get_user.is_controller:
             return HttpResponseRedirect(reverse('dash:agency-dashboard', args=[get_user.agency.link]))
-        return HttpResponseRedirect(reverse('dash:user-dashboard', args=[get_user.agency.link]))
+        return redirect('/landed')
     return redirect('dash:landing')
 
 
@@ -151,23 +153,39 @@ class LandingPage(TemplateView):
 class CreateAgency(CreateView):
     model = AgencyName
     form_class = AgencyRegistering
-    query_pk_and_slug = True
-    slug_field = 'link'
-    slug_url_kwarg = 'link'
     template_name = 'main/agency_forms.html'
 
     def get_success_url(self):
-        return reverse('')
+        return reverse('dash:agency-dashboard')
 
     def form_valid(self, form):
         user = self.request.user
         get_user = get_object_or_404(UserExtended, user=user)
         get_user.is_controller = True
         get_user.create_access = True
-        form.instance.link = generate_agency_code()
+
+        bad_chars = [';', ':', '!', "*", '!', '@', '#', '$', '%', '^', '&', '(', ')']
+        link = form.cleaned_data['name']
+        link = link.replace(' ', '-')
+
+        for x in bad_chars:
+            if bad_chars[-3] in link:
+                link = link.replace(x, 'n')
+            elif x in link:
+                link = link.replace(x, '')
+
+        while True:
+            if link[-1] == '-':
+                link = link[:-1]
+            else:
+                break
+
+        form.instance.unique_code = generate_agency_code()
+        form.instance.link = link
         get_user.save()
         return super(CreateAgency, self).form_valid(form)
 
     @method_decorator(login_required(login_url='/accounts/login/'))
+    @method_decorator(is_registered())
     def dispatch(self, request, *args, **kwargs):
         return super(CreateAgency, self).dispatch(request, *args, **kwargs)

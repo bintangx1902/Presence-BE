@@ -2,7 +2,7 @@ from .main import *
 
 
 class UserPresenceLanding(TemplateView):
-    template_name = ''
+    template_name = 'p/landing.html'
 
 
 def presence(request, link, pk):

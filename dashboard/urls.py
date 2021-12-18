@@ -9,7 +9,12 @@ urlpatterns = [
     path('register', main.account_register, name='manual'),
     path('agency/create', main.CreateAgency.as_view(), name='agency'),
     path('invitation-forms/<slug:link>', main.register_by_invitation, name='invitation'),
-    path('landed/', main.LandingPage.as_view(), name='landing'),
+    path('landed', main.LandingPage.as_view(), name='landing'),
+]
+
+''' this url patterns for presence only '''
+urlpatterns += [
+    path('<link>/user', p.UserPresenceLanding.as_view(), name='user-dashboard'),
 ]
 
 ''' this url patterns for controller only '''
@@ -19,7 +24,3 @@ urlpatterns += [
     path('<link>', c.DashboardView.as_view(), name='agency-dashboard'),
 ]
 
-''' this url patterns for presence only '''
-urlpatterns += [
-
-]
