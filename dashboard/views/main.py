@@ -131,14 +131,14 @@ def account_register(request):
         id_number = request.POST.get('identity_number')
         if password1 == password2:
             if form.is_valid() and e_form.is_valid():
-                user = User.objects.create_user(username=username, password=password2)
-                user.email = email
-                user.first_name = f_name
-                user.last_name = l_name
-                agency = AgencyName.objects.filter(unique_code=agency_code)
+                user = User.objects.create_user(
+                    username=username, password=password2,
+                    email=email, first_name=f_name,
+                    last_name=l_name
+                )
                 user.save()
-                user = User.objects.all().order_by('-pk').first()
-                e_form.instance.user__id = user.id
+                agency = AgencyName.objects.filter(unique_code=agency_code)
+                e_form.instance.user = user
                 e_form.instance.phone_number = phone
                 e_form.instance.identity_number = id_number
                 if agency:
@@ -160,8 +160,10 @@ class LandingPage(TemplateView):
     template_name = 'main/landing.html'
 
     def dispatch(self, request, *args, **kwargs):
-        # if self.request.user.is_authenticated:
-        #     return HttpResponseRedirect(reverse('dash:main'))
+        if self.request.user.is_authenticated:
+            user = self.request.user
+            if user.user.agency:
+                return redirect('/')
         return super(LandingPage, self).dispatch(request, *args, **kwargs)
 
 

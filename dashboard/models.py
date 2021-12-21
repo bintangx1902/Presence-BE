@@ -22,8 +22,7 @@ class UserExtended(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user', related_query_name='user')
     phone_number = models.CharField(max_length=255)
     identity_number = models.CharField(max_length=255)
-    connected_spv = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name='spv', related_query_name='spv')
-    agency = models.ForeignKey(AgencyName, on_delete=models.CASCADE, blank=True, default=0, null=True)
+    agency = models.ForeignKey(AgencyName, on_delete=models.CASCADE, blank=True, null=True)
     is_controller = models.BooleanField(default=False)
     create_access = models.BooleanField(default=False)
 
