@@ -7,8 +7,9 @@ app_name = 'dash'
 urlpatterns = [
     path('', main.redirection, name='main'),
     path('register', main.account_register, name='manual'),
-    path('agency/create', main.CreateAgency.as_view(), name='agency'),
-    path('invitation-forms/<slug:link>', main.register_by_invitation, name='invitation'),
+    path('agency/create', main.create_agency_view, name='agency'),
+    # path('agency/create', main.CreateAgency.as_view(), name='agency'),
+    path('invitation/<slug:link>', main.register_by_invitation, name='invitation'),
     path('landed', main.LandingPage.as_view(), name='landing'),
 ]
 
@@ -21,6 +22,7 @@ urlpatterns += [
 urlpatterns += [
     path('<link>/registering-employee', c.registering_user, name='registering-user'),
     path('<link>/generate-presence-qr', c.CreateQRCode.as_view(), name='create-qr'),
+    path('<link>/generate-invitation', c.CreateInvitationLink.as_view(), name='create-link'),
     path('<link>', c.DashboardView.as_view(), name='agency-dashboard'),
 ]
 

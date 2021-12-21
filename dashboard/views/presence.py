@@ -12,7 +12,6 @@ def presence(request, link, pk):
     if request.method == 'POST':
         if this_pre and this_agency:
             this_pre.presence.add(request.user)
-
     return redirect('')
 
 

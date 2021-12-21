@@ -65,7 +65,7 @@ class PresenceRecap(models.Model):
 
 class InvitationLink(models.Model):
     link = models.SlugField(max_length=255, unique=True)
-    valid_until = models.DateTimeField()
+    valid_until = models.DateTimeField(blank=True)
     agency = models.ForeignKey(AgencyName, on_delete=models.CASCADE)
     invitee = models.ForeignKey(User, on_delete=models.CASCADE)
 

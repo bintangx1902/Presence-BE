@@ -29,3 +29,9 @@ class GenerateQRCodeForms(forms.ModelForm):
         widgets = {
             'valid_until': forms.DateTimeInput(attrs={'type': 'datetime-local'})
         }
+
+
+class CreateInvitationLinkForms(forms.ModelForm):
+    class Meta:
+        model = InvitationLink
+        fields = ['valid_until']

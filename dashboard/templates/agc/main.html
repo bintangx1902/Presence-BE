@@ -26,5 +26,20 @@
     {{ data.user.first_name }} <br>
     {% endfor %}
 </div>
+<br>
+<div class="">
+    <h3>Invitation Links : </h3>
+    {% for link in links %}
+    <a href="{% url 'dash:invitation' link %}">{% url 'dash:invitation' link %}</a> <br>
+    {% endfor %}
+</div>
+<br>
+
+<div class="">
+    <form action="{% url 'dash:create-link' agc %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <button class="btn btn-primary">Create Invitation</button>
+    </form>
+</div>
 </body>
 </html>

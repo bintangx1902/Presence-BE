@@ -17,6 +17,14 @@ Main part is for unknown user, create invitation, fill form
 
 
 def redirection(request):
+    if request.GET:
+        link = request.GET.get('link')
+        link = InvitationLink.objects.filter(link=link)
+        if not link:
+            return redirect('dash:landing')
+        link = get_object_or_404(InvitationLink, link=link)
+        return reverse('dash:invitation', args=[link.link])
+
     if request.user.is_authenticated:
         get_user = UserExtended.objects.filter(user=request.user)
         if not get_user:
@@ -24,10 +32,10 @@ def redirection(request):
         get_user = get_object_or_404(UserExtended, user=request.user)
 
         if get_user.agency:
+            if get_user.is_controller:
+                return HttpResponseRedirect(reverse('dash:agency-dashboard', args=[get_user.agency.link]))
             return HttpResponseRedirect(reverse('dash:user-dashboard', args=[get_user.agency.link]))
-        elif get_user.is_controller:
-            return HttpResponseRedirect(reverse('dash:agency-dashboard', args=[get_user.agency.link]))
-        return redirect('/landed')
+        return redirect('/landfed')
     return redirect('dash:landing')
 
 
@@ -40,12 +48,14 @@ def register_by_invitation(request, link):
     e_form = UserExtendedForm()
     invitation = InvitationLink.objects.filter(link=link)
     if not invitation:
-        return redirect
+        messages.warning(request, "The link is invalid or Broken! ")
+        return redirect('dash:landing')
 
     invitation = get_object_or_404(InvitationLink, link=link)
     time_now = pytz.utc.localize(datetime.datetime.now())
-    if time_now <= invitation.valid_until:
-        messages.warning(request, "Maaf Forms ini sudah tidak menerima respons lagi")
+    if time_now > invitation.valid_until:
+        messages.warning(request, "Maaf Forms sudah tidak menerima respons lagi")
+        return redirect('dash:landing')
 
     if request.method == 'POST':
         form = RegisteringUser(request.POST or None, request.FILES or None)
@@ -117,6 +127,8 @@ def account_register(request):
         f_name = request.POST.get('first_name')
         l_name = request.POST.get('last_name')
         username = request.POST.get('username')
+        phone = request.POST.get('phone_number')
+        id_number = request.POST.get('identity_number')
         if password1 == password2:
             if form.is_valid() and e_form.is_valid():
                 user = User.objects.create_user(username=username, password=password2)
@@ -124,13 +136,16 @@ def account_register(request):
                 user.first_name = f_name
                 user.last_name = l_name
                 agency = AgencyName.objects.filter(unique_code=agency_code)
+                user.save()
+                user = User.objects.all().order_by('-pk').first()
+                e_form.instance.user__id = user.id
+                e_form.instance.phone_number = phone
+                e_form.instance.identity_number = id_number
                 if agency:
-                    user.save()
                     agency = get_object_or_404(AgencyName, unique_code=agency_code)
-                    e_form.instance.user = user
                     e_form.instance.agency = agency
-                    e_form.save()
-                    return redirect('/accounts/login/')
+                e_form.save()
+                return redirect('/accounts/login/')
         messages.warning(request, "Pastikan bahwa password harus sama ! ")
     context = {
         'form': form,
@@ -156,7 +171,7 @@ class CreateAgency(CreateView):
     template_name = 'main/agency_forms.html'
 
     def get_success_url(self):
-        return reverse('dash:agency-dashboard')
+        return reverse('dash:agency-dashboard', args=[self.form_valid().link])
 
     def form_valid(self, form):
         user = self.request.user
@@ -182,10 +197,59 @@ class CreateAgency(CreateView):
 
         form.instance.unique_code = generate_agency_code()
         form.instance.link = link
-        get_user.save()
+        # get_user.save()
         return super(CreateAgency, self).form_valid(form)
 
     @method_decorator(login_required(login_url='/accounts/login/'))
     @method_decorator(is_registered())
     def dispatch(self, request, *args, **kwargs):
         return super(CreateAgency, self).dispatch(request, *args, **kwargs)
+
+
+@login_required(login_url='/accounts/login')
+@is_registered()
+def create_agency_view(request):
+    form = AgencyRegistering()
+    template = 'main/agency_forms.html'
+    if request.method == 'POST':
+        form = AgencyRegistering(request.POST or None, request.FILES or None)
+        user = get_object_or_404(UserExtended, user=request.user)
+        if form.is_valid():
+            bad_chars = [';', ':', '!', "*", '!', '@', '#', '$', '%', '^', '&', '(', ')']
+            link = form.cleaned_data['name']
+            link = link.replace(' ', '-')
+
+            if bad_chars[-3] in link:
+                link = link.replace(bad_chars[-3], 'n')
+
+            for x in bad_chars:
+                if x in link:
+                    link = link.replace(x, '-')
+
+            while True:
+                if link[-1] == '-':
+                    link = link[:-1]
+                else:
+                    break
+
+            name = request.POST.get('name')
+            img = form.cleaned_data['img']
+            desc = form.cleaned_data['desc']
+
+            agency = AgencyName.objects.create(name=name, desc=desc)
+            agency.img = img
+            agency.unique_code = generate_agency_code()
+            agency.link = link
+            agency.save()
+
+            user.is_controller = True
+            user.create_access = True
+            user.agency = agency
+            user.save()
+            return HttpResponseRedirect(reverse('dash:agency-dashboard', kwargs={'link': link}))
+
+    context = {
+        'form': form
+    }
+    return render(request, template, context)
+
