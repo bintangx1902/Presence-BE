@@ -5,6 +5,7 @@ from PIL import ImageDraw, Image
 import qrcode, pytz, datetime
 from io import BytesIO
 from django.core.files import File
+from django.conf import settings
 
 
 class AgencyName(models.Model):
@@ -48,6 +49,10 @@ class QRCodeGenerator(models.Model):
         self.qr_img.save(f_name, File(buffer), save=False)
         canvas.close()
         super().save(*args, **kwargs)
+
+    def delete(self, using=None, *args, **kwargs):
+        remove(path.join(settings.MEDIA_ROOT, self.qr_img.name))
+        super().delete(*args, **kwargs)
 
     def __str__(self):
         return self.qr_code
