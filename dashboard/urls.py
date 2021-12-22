@@ -15,6 +15,8 @@ urlpatterns = [
 
 ''' this url patterns for presence only '''
 urlpatterns += [
+    path('<link>/user/scan', p.scan, name='user-scan'),
+    path('<link>/user/history/<qr>', p.HistoryDetailView.as_view(), name='user-history'),
     path('<link>/user', p.UserPresenceLanding.as_view(), name='user-dashboard'),
 ]
 

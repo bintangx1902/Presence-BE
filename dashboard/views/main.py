@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.utils.decorators import method_decorator
 from ..utils import *
 from django.utils import timezone
+from django.contrib.sites.models import Site
 
 """
 Main part is for unknown user, create invitation, fill form
@@ -66,17 +67,22 @@ def register_by_invitation(request, link):
         l_name = request.POST.get('last_name')
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
+        phone = request.POST.get('phone_number')
+        id_number = request.POST.get('identity_number')
         if password1 == password2:
             if form.is_valid() and e_form.is_valid():
-                user = User.objects.create_user(usernname=username, password=password2)
-                user.first_name = f_name
-                user.last_name = l_name
-                user.email = email
+                user = User.objects.create_user(
+                    username=username, password=password2,
+                    first_name=f_name, last_name=l_name,
+                    email=email
+                )
                 user.save()
                 e_form.instance.user = user
                 e_form.instance.agency = invitation.agency
+                e_form.instance.phone_number = phone
+                e_form.instance.identity_number = id_number
                 e_form.save()
-                return reverse
+                return redirect("/accounts/login/")
 
         messages.warning(request, "Pastikan Password harus sama! ")
 
@@ -199,7 +205,7 @@ class CreateAgency(CreateView):
 
         form.instance.unique_code = generate_agency_code()
         form.instance.link = link
-        # get_user.save()
+        get_user.save()
         return super(CreateAgency, self).form_valid(form)
 
     @method_decorator(login_required(login_url='/accounts/login/'))
@@ -254,4 +260,3 @@ def create_agency_view(request):
         'form': form
     }
     return render(request, template, context)
-

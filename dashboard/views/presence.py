@@ -1,56 +1,80 @@
 from .main import *
+from django.contrib import messages
 
 
 class UserPresenceLanding(TemplateView):
     template_name = 'p/landing.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(UserPresenceLanding, self).get_context_data(**kwargs)
+        usx = get_object_or_404(UserExtended, user=self.request.user)
+        history = PresenceRecap.objects.filter(user=usx)
 
-def presence(request, link, pk):
-    this_pre = get_object_or_404(QRCodeGenerator, pk=pk)
-    this_agency = get_object_or_404(AgencyName, link=link)
-
-    if request.method == 'POST':
-        if this_pre and this_agency:
-            this_pre.presence.add(request.user)
-    return redirect('')
+        context['agc'] = self.kwargs['link']
+        context['history'] = history
+        return context
 
 
 class ScanQRCode(UpdateView):
     model = QRCodeGenerator
-    template_name = ''
+    template_name = 'p/forms.html'
     form_class = None
-    query_pk_and_slug = True
-    pk_url_kwarg = 'pk'
-
-    def get_qr(self):
-        return get_object_or_404(QRCodeGenerator, pk=self.kwargs['pk'])
+    # query_pk_and_slug = True
+    # slug_field = 'link'
 
     def form_valid(self, form):
-        get_qr = self.get_qr()
         user = self.request.user
-        the_code = self.request.POST.get('the_code')
-        if the_code and the_code == get_qr.qr_code:
-            form.instance.presence = user.pk
         return super(ScanQRCode, self).form_valid(form)
 
     def dispatch(self, request, *args, **kwargs):
-        get_qr = self.get_qr()
-        user = self.request.user
-        is_presence = get_qr.presence.filter(id=user.pk)
-        if is_presence.exists():
-            return HttpResponseRedirect(reverse(''))
+        # if is_presence.exists():
+        #     return HttpResponseRedirect(reverse(''))
         return super(ScanQRCode, self).dispatch(request, *args, **kwargs)
 
 
-def scan(request, pk):
-    get_qr = get_object_or_404(QRCodeGenerator, pk=pk)
-    user = request.user
-    is_presence = get_qr.presence.filter(id=user.pk)
+@login_required(login_url='/accounts/login')
+def scan(request, link):
     if request.method == 'POST':
-        if is_presence.exists():
-            return redirect('')
-        the_code = request.POST.get('the_code')
-        if the_code and the_code == get_qr.qr_code:
-            get_qr.presence.add(user)
+        code = request.POST.get('code')
+        user = get_object_or_404(UserExtended, user=request.user)
+        get_code = QRCodeGenerator.objects.filter(qr_code=code)
+        if not get_code:
+            return HttpResponseRedirect(reverse('dash:user-dashboard', args=[link]))
+        get_code = get_object_or_404(QRCodeGenerator, qr_code=code)
+        if get_code.agency != user.agency:
+            messages.error(request, "Presence QR agency and your agency is not same! ")
+            return HttpResponseRedirect(reverse('dash:user-dashboard', args=[link]))
 
-    return
+        recapitulated = PresenceRecap.objects.filter(user=user, qr=get_code)
+        if recapitulated:
+            return redirect(f"/{link}/user")
+
+        recap = PresenceRecap.objects.create(
+            qr=get_code, user=user
+        )
+        recap.save()
+        return HttpResponseRedirect(reverse('dash:user-dashboard', args=[link]))
+
+    context = {}
+    return render(request, 'p/forms.html', context)
+
+
+class HistoryDetailView(DetailView):
+    model = QRCodeGenerator
+    template_name = 'p/hist.html'
+    context_object_name = 'qr'
+    # query_pk_and_slug = True
+    # slug_field = 'link', 'qr'
+    # slug_url_kwarg = 'link', 'qr'
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(QRCodeGenerator, qr_code=self.kwargs['qr'])
+
+    def get_context_data(self, **kwargs):
+        context = super(HistoryDetailView, self).get_context_data(**kwargs)
+        usx = get_object_or_404(UserExtended, user=self.request.user)
+        time_stamp = get_object_or_404(PresenceRecap, qr=self.get_object(), user=usx)
+
+        context['recap'] = time_stamp
+        context['agc'] = self.kwargs['link']
+        return context

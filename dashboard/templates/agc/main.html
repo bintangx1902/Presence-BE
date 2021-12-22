@@ -30,7 +30,7 @@
 <div class="">
     <h3>Invitation Links : </h3>
     {% for link in links %}
-    <a href="{% url 'dash:invitation' link %}">{% url 'dash:invitation' link %}</a> <br>
+    <a href="{% url 'dash:invitation' link %}">{{ request.META.HTTP_HOST }}{% url 'dash:invitation' link %}</a> <br>
     {% endfor %}
 </div>
 <br>

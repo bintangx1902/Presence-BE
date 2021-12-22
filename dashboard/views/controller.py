@@ -10,9 +10,10 @@ class DashboardView(TemplateView):
         context = super(DashboardView, self).get_context_data(**kwargs)
         agency = get_object_or_404(AgencyName, link=self.kwargs['link'])
         all_emp = UserExtended.objects.filter(agency=agency).exclude(user=self.request.user)
-        all_qr = QRCodeGenerator.objects.filter(agency=agency)
+        all_qr = QRCodeGenerator.objects.filter(agency=agency, valid_until__gte=timezone.now())
         links = InvitationLink.objects.filter(valid_until__gte=timezone.now(), agency=agency)
 
+        # context['host'] = hostname
         context['QR'] = all_qr
         context['agc'] = self.kwargs['link']
         context['emp'] = all_emp.count()

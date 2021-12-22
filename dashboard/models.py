@@ -31,7 +31,7 @@ class UserExtended(models.Model):
 
 
 class QRCodeGenerator(models.Model):
-    qr_code = models.TextField(unique=True)
+    qr_code = models.SlugField(unique=True)
     valid_until = models.DateTimeField(blank=True)
     agency = models.ForeignKey(AgencyName, on_delete=models.CASCADE)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='creator', default=0)
@@ -54,12 +54,12 @@ class QRCodeGenerator(models.Model):
 
 
 class PresenceRecap(models.Model):
-    qr = models.ForeignKey(QRCodeGenerator, on_delete=models.CASCADE)
+    qr = models.ForeignKey(QRCodeGenerator, on_delete=models.CASCADE, related_name='qr_c', related_query_name='qr_c')
     user = models.ForeignKey(UserExtended, on_delete=models.CASCADE)
     time_stamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return
+        return f"presence at {self.time_stamp.strftime('%a %H:%M  %d/%m/%y')}"
 
 
 class InvitationLink(models.Model):
