@@ -124,3 +124,14 @@ class CreateInvitationLink(CreateView):
     @method_decorator(login_required(login_url='/accounts/login'))
     def dispatch(self, request, *args, **kwargs):
         return super(CreateInvitationLink, self).dispatch(request, *args, **kwargs)
+
+
+@login_required(login_url='/accounts/login/')
+def delete_media(request, link):
+    user = get_object_or_404(UserExtended, user=request.user)
+    raw_data = QRCodeGenerator.objects.filter(agency=user.agency)
+    list_id = [x.pk for x in raw_data]
+    for i in list_id:
+        instance = QRCodeGenerator.objects.get(pk=i)
+        instance.delete()
+    return redirect(f"/{link}")
