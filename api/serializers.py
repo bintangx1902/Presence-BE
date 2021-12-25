@@ -14,3 +14,14 @@ class UserSerializer(ModelSerializer):
         model = User
         fields = '__all__'
 
+
+class QRCodeSerializer(ModelSerializer):
+    class Meta:
+        model = QRCodeGenerator
+        fields = '__all__'
+
+
+class UserExtendedSerializer(ModelSerializer):
+    class Meta:
+        model = UserExtended
+        fields = "__all__"

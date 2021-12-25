@@ -7,11 +7,22 @@ from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from ..serializers import *
 from django.contrib.auth.models import User
+from django.utils.decorators import method_decorator
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
+from rest_framework.decorators import renderer_classes
+
+
+def payloads(token):
+    try:
+        payload = jwt.decode(token, 'secret', algorithms='HS256')
+    except jwt.ExpiredSignatureError:
+        raise AuthenticationFailed("UnAuthenticated!")
+
+    return payload
 
 
 @api_view(['GET'])
 def home(request):
-    print(request.COOKIES)
     return render(request, 'api/main.html')
 
 
@@ -68,14 +79,16 @@ class UserAuthenticated(APIView):
         if not token:
             raise AuthenticationFailed("UnAuthenticated")
 
-        try:
-            payload = jwt.decode(token, 'secret', algorithms='HS256')
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed("UnAuthenticated!")
+        payload = payloads(token)
         
         user = User.objects.get(id=payload['user_id'])
         serializer = UserSerializer(user, many=False)
-        return Response(serializer.data)
+
+        ser = UserExtendedSerializer(user.user, many=False)
+        return Response({
+            "user": serializer.data,
+            "user_extended": ser.data
+        })
 
 
 class UserLogoutEndPoint(APIView):
