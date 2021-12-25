@@ -6,10 +6,12 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from ..serializers import *
+from ..utils import *
 from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from rest_framework.decorators import renderer_classes
+from django.utils import timezone
 
 
 def payloads(token):
@@ -19,6 +21,10 @@ def payloads(token):
         raise AuthenticationFailed("UnAuthenticated!")
 
     return payload
+
+
+def this_user(payload):
+    return get_object_or_404(User, id=payload['user_id'])
 
 
 @api_view(['GET'])

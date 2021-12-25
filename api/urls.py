@@ -14,6 +14,7 @@ urlpatterns = [
 
 """ controller.py """
 urlpatterns += [
-    path('agency', con.ControllerMainEndPoint.as_view(), name='controller-api'),
     path('agency/qr', con.QRCodeForPresence.as_view(), name='controller-qr-api'),
+    path('agency/inv', con.InvitationLinkEndPoint.as_view(), name='invitation-link-api'),
+    path('agency', con.ControllerMainEndPoint.as_view(), name='controller-api'),
 ]

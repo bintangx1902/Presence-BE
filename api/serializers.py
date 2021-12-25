@@ -25,3 +25,9 @@ class UserExtendedSerializer(ModelSerializer):
     class Meta:
         model = UserExtended
         fields = "__all__"
+
+
+class InvitationLinkSerializer(ModelSerializer):
+    class Meta:
+        model = InvitationLink
+        fields = '__all__'
