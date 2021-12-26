@@ -88,12 +88,14 @@ class UserAuthenticated(APIView):
         payload = payloads(token)
         
         user = User.objects.get(id=payload['user_id'])
-        serializer = UserSerializer(user, many=False)
+        user_serializer = UserSerializer(user, many=False)
+        extend_serializer = UserExtendedSerializer(user.user, many=False)
+        agency_serializer = AgencySerializer(user.user.agency, many=False)
 
-        ser = UserExtendedSerializer(user.user, many=False)
         return Response({
-            "user": serializer.data,
-            "user_extended": ser.data
+            "user": user_serializer.data,
+            'extended': extend_serializer.data,
+            "agency": agency_serializer.data
         })
 
 
