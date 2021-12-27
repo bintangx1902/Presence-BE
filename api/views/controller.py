@@ -17,9 +17,6 @@ class ControllerMainEndPoint(APIView):
 
         return Response(serializer.data)
 
-    def post(self, format=None):
-        return Response()
-
 
 class QRCodeForPresence(APIView):
     def get(self, format=None):
