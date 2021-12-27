@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import main, controller as con
+from .views import main, controller as con, presence as pre
 
 app_name = 'api'
 
@@ -11,6 +11,13 @@ urlpatterns = [
     path('logout', main.UserLogoutEndPoint.as_view(), name='api-logout'),
     path('agc', main.AllAgencyNameViews.as_view(), name='agency'),
 ]
+
+
+""" presence.py """
+urlpatterns += [
+    path('agency/user/history', pre.UserPresenceHIstory.as_view(), name='api-user-history'),
+]
+
 
 """ controller.py """
 urlpatterns += [

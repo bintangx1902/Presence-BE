@@ -31,3 +31,10 @@ class InvitationLinkSerializer(ModelSerializer):
     class Meta:
         model = InvitationLink
         fields = '__all__'
+
+
+class PresenceRecapSerializer(ModelSerializer):
+    class Meta:
+        model = PresenceRecap
+        fields = '__all__'
+
