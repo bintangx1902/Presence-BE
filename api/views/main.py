@@ -60,12 +60,11 @@ class UserLoginEndPoint(APIView):
         if not user:
             raise AuthenticationFailed("User is not registered")
         user = get_object_or_404(User, username=username)
-        get_user = get_object_or_404(UserExtended, user=user)
         if not user.check_password(password):
             raise AuthenticationFailed("Wrong Password!")
 
         payload = {
-            'user_id': get_user.id,
+            'user_id': user.id,
             'iat': datetime.datetime.utcnow()
         }
 
@@ -86,8 +85,7 @@ class UserAuthenticated(APIView):
             raise AuthenticationFailed("UnAuthenticated")
 
         payload = payloads(token)
-        
-        user = User.objects.get(id=payload['user_id'])
+        user = this_user(payload)
         user_serializer = UserSerializer(user, many=False)
         extend_serializer = UserExtendedSerializer(user.user, many=False)
         agency_serializer = AgencySerializer(user.user.agency, many=False)
