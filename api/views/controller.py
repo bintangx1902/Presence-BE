@@ -71,8 +71,8 @@ class InvitationLinkEndPoint(APIView):
 
         payload = payloads(token)
         user = this_user(payload)
-        inv = InvitationLink.objects.all()
-        serializer = InvitationLinkSerializer(inv, many=True)
+        inv = InvitationLink.objects.filter(agency=user.user.agency, valid_until__gte=timezone.now())
+        serializer = InvitationLinkSerializer(inv, many=True)   
         return Response(serializer.data)
 
     def post(self, format=None):
@@ -103,6 +103,6 @@ class InvitationLinkEndPoint(APIView):
             agency=user.user.agency, invitee=user
         )
 
-        inv = inv.filter(agency=user.user.agency)
+        inv = inv.filter(agency=user.user.agency, valid_until__gte=timezone.now())
         serializer = InvitationLinkSerializer(inv, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
