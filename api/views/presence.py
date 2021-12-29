@@ -47,4 +47,30 @@ class UserPresenceHIstory(APIView):
 
 class UserHistoryDetail(APIView):
     def get(self, format=None):
-        return Response()
+        token = self.request.COOKIES.get('jwt')
+        recap_id = self.request.GET.get('id')
+        if not token:
+            raise AuthenticationFailed("UnAuthenticated! ", status.HTTP_403_FORBIDDEN)
+
+        if not recap_id:
+            raise AuthenticationFailed("The ID is not detected on system! ", status.HTTP_404_NOT_FOUND)
+
+        payload = payloads(token)
+        user = this_user(payload)
+
+        recap = PresenceRecap.objects.filter(id=recap_id, user=user.user)
+        if not recap:
+            raise AuthenticationFailed("The ID is other presence! ", status.HTTP_204_NO_CONTENT)
+
+        recap = get_object_or_404(PresenceRecap, id=recap_id, user=user.user)
+        presence_serializer = PresenceRecapSerializer(recap, many=False)
+        qr_serializer = QRCodeSerializer(recap.qr, many=False)
+
+        response = Response()
+        response.data = {
+            'presence': presence_serializer.data,
+            'QR_code': qr_serializer.data
+        }
+        return response
+
+

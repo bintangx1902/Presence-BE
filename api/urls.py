@@ -16,6 +16,7 @@ urlpatterns = [
 """ presence.py """
 urlpatterns += [
     path('agency/user/history', pre.UserPresenceHIstory.as_view(), name='api-user-history'),
+    path('agency/user/history-detail', pre.UserHistoryDetail.as_view(), name='api-user-history-detail'),
 ]
 
 
