@@ -31,7 +31,7 @@ class UserPresenceHIstory(APIView):
         user = this_user(payload)
         qr = get_object_or_404(QRCodeGenerator, qr_code=self.request.data['code'])
 
-        if qr.qr_code != user.user.agency:
+        if qr.agency != user.user.agency:
             raise AuthenticationFailed("Your Agency is not same like the QR code", status.HTTP_404_NOT_FOUND)
 
         recap = PresenceRecap.objects.create(
