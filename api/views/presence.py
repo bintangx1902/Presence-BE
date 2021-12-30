@@ -26,7 +26,6 @@ class UserPresenceHIstory(APIView):
         agency = AgencyName.objects.filter(unique_code=unique)
         if not agency:
             raise AuthenticationFailed("Agency is not registered! ", status.HTTP_403_FORBIDDEN)
-        agency = get_object_or_404(AgencyName, unique_code=unique)
 
         payload = payloads(token)
         user = this_user(payload)
