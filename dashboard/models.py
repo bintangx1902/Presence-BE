@@ -28,7 +28,7 @@ class UserExtended(models.Model):
     create_access = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.user}'s mobile : {self.phone_number}"
+        return f"{self.user}'s mobile : {self.phone_number} - {self.agency}"
 
 
 class QRCodeGenerator(models.Model):
