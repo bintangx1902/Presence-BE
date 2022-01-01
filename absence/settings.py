@@ -12,6 +12,13 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 # from pathlib import Path
 from os.path import join, dirname, abspath
+from decouple import config
+import hashlib
+
+
+def encrypt(string):
+    return hashlib.sha256(string.encode()).hexdigest()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,10 +28,10 @@ BASE_DIR = dirname(dirname(abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-nb@=yr(5rtrf^5lxpt(uyz4bm(6lp(mduxxzx^f5@xgz%zn&y9'
+SECRET_KEY = encrypt(config('SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(int(config('DEBUG')))
 
 ALLOWED_HOSTS = ['*']
 
@@ -52,7 +59,7 @@ INSTALLED_APPS = [
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-SITE_ID = 1
+SITE_ID = int(config('SITE_ID'))
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -103,7 +110,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': BASE_DIR / 'db.sqlite3',
-        'NAME': join(BASE_DIR, 'db.sqlite3'),
+        'NAME': join(BASE_DIR, config('DB_NAME')),
     }
 }
 
