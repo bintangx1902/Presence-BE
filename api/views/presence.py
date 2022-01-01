@@ -3,6 +3,8 @@ from rest_framework import serializers
 
 
 class UserPresenceHIstory(APIView):
+    renderer_classes = [JSONRenderer]
+
     def get(self, format=None):
         token = self.request.COOKIES.get('jwt')
         if not token:
@@ -45,6 +47,8 @@ class UserPresenceHIstory(APIView):
 
 
 class UserHistoryDetail(APIView):
+    renderer_classes = [JSONRenderer]
+
     def get(self, format=None):
         token = self.request.COOKIES.get('jwt')
         recap_id = self.request.GET.get('id')

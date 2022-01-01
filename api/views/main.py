@@ -33,6 +33,8 @@ def home(request):
 
 
 class AllAgencyNameViews(APIView):
+    renderer_classes = [JSONRenderer]
+
     def get(self, format=None):
         agency = AgencyName.objects.all()
         serializer = AgencySerializer(agency, many=True)
@@ -40,6 +42,8 @@ class AllAgencyNameViews(APIView):
 
 
 class UserLoginEndPoint(APIView):
+    renderer_classes = [JSONRenderer]
+
     def get(self, format=None):
         token = self.request.COOKIES.get('jwt')
         if token:
@@ -79,6 +83,8 @@ class UserLoginEndPoint(APIView):
 
 
 class UserAuthenticated(APIView):
+    renderer_classes = [JSONRenderer]
+
     def get(self, format=None):
         token = self.request.COOKIES.get('jwt')
         if not token:
@@ -98,6 +104,8 @@ class UserAuthenticated(APIView):
 
 
 class UserLogoutEndPoint(APIView):
+    renderer_classes = [JSONRenderer]
+
     def get(self, format=None):
         token = self.request.COOKIES.get('jwt')
         if token:

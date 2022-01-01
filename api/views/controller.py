@@ -4,7 +4,7 @@ from .main import *
 
 
 class ControllerMainEndPoint(APIView):
-    # renderer_classes = [JSONRenderer]
+    renderer_classes = [JSONRenderer]
 
     def get(self, format=None):
         token = self.request.COOKIES.get('jwt')
@@ -19,6 +19,8 @@ class ControllerMainEndPoint(APIView):
 
 
 class QRCodeForPresence(APIView):
+    renderer_classes = [JSONRenderer]
+
     def get(self, format=None):
         token = self.request.COOKIES.get('jwt')
         if not token:
@@ -64,6 +66,8 @@ class QRCodeForPresence(APIView):
 
 
 class InvitationLinkEndPoint(APIView):
+    renderer_classes = [JSONRenderer]
+
     def get(self, format=None):
         token = self.request.COOKIES.get('jwt')
         if not token:

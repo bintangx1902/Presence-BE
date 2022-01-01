@@ -57,6 +57,13 @@ INSTALLED_APPS = [
 
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ]
+}
+
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 SITE_ID = int(config('SITE_ID'))
